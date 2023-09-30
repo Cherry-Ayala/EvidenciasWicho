@@ -6,6 +6,40 @@
 
 using namespace std;
 
+// Función para encontrar la Longest Common Subsequence (LCS)
+string encontrarLCS(const string& str1, const string& str2) {
+    int m = str1.length();
+    int n = str2.length();
+    vector<vector<int> > dp(m + 1, vector<int>(n + 1, 0));
+
+    for (int i = 1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (str1[i - 1] == str2[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+    }
+
+    int i = m;
+    int j = n;
+    string lcs;
+    while (i > 0 && j > 0) {
+        if (str1[i - 1] == str2[j - 1]) {
+            lcs = str1[i - 1] + lcs;
+            i--;
+            j--;
+        } else if (dp[i - 1][j] > dp[i][j - 1]) {
+            i--;
+        } else {
+            j--;
+        }
+    }
+
+    return lcs;
+}
+
 // Función para verificar si una cadena es palíndromo
 bool esPalindromo(string str) {
     int inicio = 0;
@@ -39,6 +73,7 @@ void buscarCodigoEnTransmision(const string& codigo, ifstream& transmision, int&
         // Buscar palíndromos
         for (int i = 0; i < linea.length(); i++) {
             for (int longitud = 1; longitud <= min(1000, static_cast<int>(linea.length() - i)); longitud++) {
+                
                 string subcadena = linea.substr(i, longitud);
                 if (esPalindromo(subcadena) && longitud > maxLongitudPalindromo) {
                     maxLongitudPalindromo = longitud;
@@ -82,63 +117,29 @@ void analizarTransmisiones(const vector<string>& transmisiones, const vector<str
     }
 }
 
-// Función para comparar las transmisiones entre sí
+// Función para comparar las transmisiones entre sí utilizando LCS
 void compararTransmisiones(const vector<string>& transmisiones, ofstream& resultado) {
-    string subcadenasMasLargas[3];
-    ifstream transmisionesCombinadas[3];
+    for (int i = 0; i < transmisiones.size(); i++) {
+        for (int j = i + 1; j < transmisiones.size(); j++) {
+            ifstream transmision1(transmisiones[i]);
+            ifstream transmision2(transmisiones[j]);
 
-    for (int i = 0; i < 3; i++) {
-        transmisionesCombinadas[i].open(transmisiones[i].c_str());
-    }
-
-    for (int i = 0; i < 3; i++) {
-        for (int j = i + 1; j < 3; j++) {
-            string subcadenaComunMasLarga = "";
             string linea1, linea2;
+            string trans1, trans2;
 
-            while (getline(transmisionesCombinadas[i], linea1)) {
-                while (getline(transmisionesCombinadas[j], linea2)) {
-                    int m = linea1.length();
-                    int n = linea2.length();
-                    vector<vector<int> > dp(m + 1, vector<int>(n + 1, 0));
-
-                    int longitudMaxima = 0;
-                    int indiceFinal = 0;
-
-                    for (int x = 1; x <= m; x++) {
-                        for (int y = 1; y <= n; y++) {
-                            if (linea1[x - 1] == linea2[y - 1]) {
-                                dp[x][y] = dp[x - 1][y - 1] + 1;
-                                if (dp[x][y] > longitudMaxima) {
-                                    longitudMaxima = dp[x][y];
-                                    indiceFinal = x - 1;
-                                }
-                            } else {
-                                dp[x][y] = 0;
-                            }
-                        }
-                    }
-
-                    if (longitudMaxima > subcadenaComunMasLarga.length()) {
-                        subcadenaComunMasLarga = linea1.substr(indiceFinal - longitudMaxima + 1, longitudMaxima);
-                    }
-                }
+            while (getline(transmision1, linea1)) {
+                trans1 += linea1;
             }
 
-            subcadenasMasLargas[i] = subcadenaComunMasLarga;
-            subcadenasMasLargas[j] = subcadenaComunMasLarga;
+            while (getline(transmision2, linea2)) {
+                trans2 += linea2;
+            }
 
-            transmisionesCombinadas[i].clear();
-            transmisionesCombinadas[j].clear();
-            transmisionesCombinadas[i].seekg(0, ios::beg);
-            transmisionesCombinadas[j].seekg(0, ios::beg);
+            string subcadenaComunMasLarga = encontrarLCS(trans1, trans2);
+
+            resultado << "T" << i + 1 << "-T" << j + 1 << " ==> " << subcadenaComunMasLarga << endl;
         }
     }
-
-    resultado << "Los Substring más largos son:" << endl;
-    resultado << "T1-T2 ==> " << subcadenasMasLargas[0] << endl;
-    resultado << "T1-T3 ==> " << subcadenasMasLargas[1] << endl;
-    resultado << "T2-T3 ==> " << subcadenasMasLargas[2] << endl;
 }
 
 int main() {
@@ -148,15 +149,9 @@ int main() {
     transmisiones.push_back("Transmission3.txt");
 
     vector<string> codigos;
-    ifstream mcode("mcode.txt");
-
-    if (!mcode) {
-        cerr << "Error al abrir el archivo mcode.txt." << endl;
-        return 1;
-    }
-
+    ifstream codigoFile("mcode.txt");
     string codigo;
-    while (getline(mcode, codigo)) {
+    while (getline(codigoFile, codigo)) {
         codigos.push_back(codigo);
     }
 
@@ -172,3 +167,4 @@ int main() {
 
     return 0;
 }
+
