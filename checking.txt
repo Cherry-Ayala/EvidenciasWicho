@@ -1,0 +1,17 @@
+Código: Unauthorized
+Transmission1.txt ==> 1 veces
+Posiciones: Unauthorized
+Palíndromo más grande: U (Posición: 0)
+========================
+Transmission2.txt ==> 1 veces
+Posiciones: Unauthorized
+Palíndromo más grande: U (Posición: 1)
+========================
+Transmission3.txt ==> 1 veces
+Posiciones: Unauthorized
+Palíndromo más grande: U (Posición: 2)
+========================
+Los Substring más largos son:
+T1-T2 ==> Unauthorized
+T1-T3 ==> Unauthorized
+T2-T3 ==> Unauthorized
